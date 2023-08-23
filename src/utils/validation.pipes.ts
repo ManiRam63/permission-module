@@ -84,25 +84,3 @@ export function checkIfValidUUID(str) {
 
   return regexExp.test(str);
 }
-
-export function getIsDateValidationSchema() {
-  return yup
-    .string()
-    .test(
-      'createdAt',
-      'string must be the date format ',
-      function (value: string) {
-        if (value && !Date.parse(value)) {
-          return false;
-        }
-        return true;
-      },
-    );
-}
-
-export function checkCharacterlength(value, length) {
-  if (value.length >= length) {
-    return false;
-  }
-  return true;
-}

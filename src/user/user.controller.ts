@@ -38,7 +38,6 @@ export class UserController {
     status: 400,
     description: 'Validation error',
   })
-  // @UseGuards(JwtAuthGuard)
   async create(
     @Body(new YupValidationPipe(getValidationSchema(userValidationSchema)))
     data: UserDto,
@@ -71,7 +70,7 @@ export class UserController {
   ) {
     return this.userService.update(id, data);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get('/all')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.GET_USER_DETAILS })
   @ApiResponse({
@@ -85,7 +84,7 @@ export class UserController {
   })
   /**
    * @param query - query params
-   * @deci
+   * @description:
    */
   findAll(
     @Query(new YupValidationPipe(getValidationSchema(findValidationSchema)))
