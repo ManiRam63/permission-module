@@ -19,6 +19,7 @@ import { PermissionDto } from './permission.dto';
 import { PermissionService } from './permission.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.gurd';
+@UseGuards(JwtAuthGuard)
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}

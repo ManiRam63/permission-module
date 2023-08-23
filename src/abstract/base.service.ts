@@ -1,12 +1,9 @@
 import {
   BadRequestException,
-  ForbiddenException,
   HttpException,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { IErrorObject } from 'src/types/IErrorObject';
 import {
   paginate,
   Pagination,
@@ -20,27 +17,12 @@ export abstract class BaseService {
   protected _getBadRequestError(message: string) {
     throw new BadRequestException({ message });
   }
-  protected _getForbiddenError(message: IErrorObject | string) {
-    throw new ForbiddenException({ message });
-  }
   protected _getInternalServerError(message: string) {
     throw new InternalServerErrorException({ message });
   }
-  // mobile use only
-  protected _getInternalServerErrorMob(message: string) {
-    throw new InternalServerErrorException({ message, items: [] });
-  }
-  protected _getNotFoundErrorMob(message: string) {
-    throw new NotFoundException({ message, items: [] });
-  }
+
   protected _getNotFoundError(message: string) {
     throw new NotFoundException({ message });
-  }
-  protected _getUnverifiedEmail(message: string) {
-    throw new NotFoundException({ message });
-  }
-  protected _getUnauthorizedError(message: string) {
-    throw new UnauthorizedException({ message });
   }
 
   protected async _paginate<T>(
@@ -88,13 +70,6 @@ export abstract class BaseService {
     switch (error.status || error.code || error.name) {
       case 400:
         return this._getBadRequestError(error.message);
-
-      case 401:
-        return this._getUnauthorizedError(error.message);
-
-      case 403:
-        return this._getForbiddenError(error.message);
-
       case 404:
         return this._getNotFoundError(error.message);
 
@@ -115,8 +90,6 @@ export abstract class BaseService {
         return this._getBadRequestError(
           RESPONSE_MESSAGES.ERROR_MESSAGES.INVALID_TYPE_OF_INPUT,
         );
-      case 403:
-        return this._getUnverifiedEmail(error.message);
       default:
         return this._getInternalServerError(
           RESPONSE_MESSAGES.COMMON.SOMETHING_WENT_WRONG,
