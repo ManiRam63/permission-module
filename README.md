@@ -41,7 +41,7 @@ $ npm run start:prod
 ## Technologies used in project
 
 ```bash
-- NodeJs (20.3.1)
+- NodeJs (16.15.0)
 - ExpressJs(4.17.17)
 - yup (1.2.0)
 - TypeScript (5.1.3)
