@@ -19,6 +19,9 @@ export interface IUser extends IBaseWithId {
   phone: number;
   status: boolean;
   refreshToken?: string;
+  role: string;
+  oldPassword?: string;
+  newPassword?: string;
 }
 
 export interface ISidebar extends IBaseWithId {
@@ -40,4 +43,13 @@ export interface IAuth {
 }
 export interface IPermission {
   sidebar?: [];
+}
+
+export interface IAction extends IBaseWithId {
+  name: string;
+  status: boolean;
+}
+export interface IResetPassword {
+  oldPassword: string;
+  newPassword: string;
 }

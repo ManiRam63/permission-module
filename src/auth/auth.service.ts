@@ -32,12 +32,11 @@ export class AuthService extends BaseService {
         );
       }
       const payload = {
-        sub: user.id,
+        uuid: user.id,
         username: user.email,
       };
       const accessToken = await this.getAccessToken(payload);
       delete user?.password;
-
       const permission = await this.permissionService.getUserPermissions(user);
       user.permission = permission;
       return {
@@ -49,14 +48,13 @@ export class AuthService extends BaseService {
     }
   }
   /**
-   *
    * @param user
    * @returns accessToken
    * @description:this function is used to get access token
    */
   async getAccessToken(user) {
     try {
-      const accessToken = await this.jwtService.sign(user, {
+      const accessToken = this.jwtService.sign(user, {
         secret: jwtConstants.secret,
         expiresIn: +process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
       });
@@ -77,4 +75,104 @@ export class AuthService extends BaseService {
   //     return refreshToken;
   //   }
   // }
+
+  /**
+   * @param {data}
+   * @returns token
+   * @description:this function is used to user sign in
+   */
+
+  async resetPassword(req, data): Promise<any> {
+    try {
+      if (req) {
+        const userDetails = await this.getUserByReq(req);
+        const { newPassword, oldPassword } = data;
+        const user: any = await this.userService.findById(userDetails?.uuid);
+        const passwordIsValid = await bcrypt.compare(
+          oldPassword,
+          user?.password,
+        );
+        if (!passwordIsValid) {
+          this._getBadRequestError(
+            RESPONSE_MESSAGES.USER.INVALID_USER_NAME_OR_PASSWORD,
+          );
+        }
+        const { id } = user;
+        //  generate hashed password
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        data.password = hashedPassword;
+        delete data?.oldPassword;
+        delete data?.newPassword;
+        await this.userService.update(id, data);
+        const mailDetails = {
+          from: process.env.SYSTEM_EMAIL,
+          to: user?.email,
+          subject: 'Reset password',
+          html: `<span><b> Your password has been changed </b>.<br> Here is new details of login</br> 
+           Your email :${user?.email} <br> Your Password is: ${newPassword}  <br> Please don't share with any one your Details </span>`,
+        };
+        await this.userService.sendMail(mailDetails);
+        return {
+          message: 'Your password has been update successfully ',
+        };
+      } else {
+        this.customErrorHandle('Something went wrong');
+      }
+    } catch (error) {
+      this.customErrorHandle(error);
+    }
+  }
+  /**
+   *
+   * @param req
+   * @returns user info
+   * @description: this function is used for get user data from jwt token
+   */
+  async getUserByReq(req: any) {
+    try {
+      const jwt = await req.headers.authorization.replace('Bearer ', '');
+      return this.jwtService.decode(jwt, { json: true }) as {
+        uuid: string;
+      };
+    } catch (error) {
+      this.customErrorHandle(error);
+    }
+  }
+  /**
+   *
+   * @param req
+   * @returns user info
+   * @description: this function is used for get user data from jwt token
+   */
+  async getPermission(req: any, slug: string, action: string) {
+    try {
+      const user = await this.getUserByReq(req);
+      if (!user) {
+        this.customErrorHandle('something went wrong');
+      }
+      const { uuid } = user;
+      const userDetails = await this.userService.findById(uuid);
+      const userPermissions =
+        await this.permissionService.getUserPermissions(userDetails);
+      let returnRes: any = false;
+
+      for (const x of userPermissions) {
+        const sidebar = x?.slug;
+        const actionList = x?.actions;
+        for (const element of actionList) {
+          const actionName = element?.name;
+          if (sidebar === slug && actionName === action) {
+            returnRes = true;
+          }
+        }
+      }
+      if (returnRes) {
+        return true;
+      }
+      throw this._getUnauthorized('Permission Denied');
+    } catch (error) {
+      this.customErrorHandle(error);
+    }
+  }
 }

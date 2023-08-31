@@ -1,41 +1,75 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Sidebar } from './sidebar.entity';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { BaseService } from '../abstract';
 import { ISidebar } from '../types';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { AuthService } from 'src/auth/auth.service';
 export const allowedFieldsToSort = ['url', 'slug', 'status', 'name'];
-@Injectable({})
+
+const AllowParams = Object.freeze({
+  SLUG: 'sidebar', // add sidebar slug here
+  ADD: 'add', // add actions here
+  UPDATE: 'update',
+  DELETE: 'delete',
+  VIEW: 'view',
+});
+@Injectable({ scope: Scope.REQUEST })
 export class SidebarService extends BaseService {
   constructor(
     @InjectRepository(Sidebar)
     private readonly sidebarRepository: Repository<Sidebar>,
+    private readonly authService: AuthService,
+    @Inject(REQUEST) private readonly request: Request,
   ) {
     super();
   }
-
+  async decodePermission(action: string) {
+    const userReq = this.request;
+    try {
+      return await this.authService.getPermission(
+        userReq,
+        AllowParams.SLUG,
+        action,
+      );
+    } catch (error) {
+      this.customErrorHandle(error);
+    }
+  }
   /**
    * @param
    * @returns {dataObject}
    * @description :This function is used to create sidebar
    */
   async create(data: Partial<ISidebar>) {
-    const { name, displayOrder } = data;
+    const { name, displayOrder, slug, url } = data;
     try {
-      const IsExist = await this.find({
+      await this.decodePermission(AllowParams.ADD);
+      const IsExistName = await this.find({
         name: name,
-        displayOrder: displayOrder,
       });
-      if (IsExist) {
+      if (IsExistName) {
         return this._getNotFoundError(
           RESPONSE_MESSAGES.SIDEBAR.SIDEBAR_IS_ALREADY_EXIST,
+        );
+      }
+      // check if sidebar url already exist of not
+
+      const IsExistUrl = await this.find({
+        url: url,
+      });
+      if (IsExistUrl) {
+        return this._getNotFoundError(
+          RESPONSE_MESSAGES.SIDEBAR.SIDEBAR_URL_ALREADY_EXIST,
         );
       }
       const created = this.sidebarRepository.create(data);
       return await this.sidebarRepository.save(created);
     } catch (error) {
-      this._getBadRequestError(error.message);
+      this.customErrorHandle(error);
     }
   }
 
@@ -46,6 +80,7 @@ export class SidebarService extends BaseService {
    */
   async find(dataObject: object) {
     try {
+      await this.decodePermission(AllowParams.VIEW);
       return await this.sidebarRepository.findOne({
         where: dataObject,
       });
@@ -61,6 +96,7 @@ export class SidebarService extends BaseService {
    */
   async update(id: string, data: Partial<ISidebar>) {
     try {
+      await this.decodePermission(AllowParams.UPDATE);
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(RESPONSE_MESSAGES.SIDEBAR.ID_NOT_VALID);
@@ -101,6 +137,7 @@ export class SidebarService extends BaseService {
    */
   async findAll(data: any) {
     try {
+      await this.decodePermission(AllowParams.VIEW);
       const { search, sort, slug } = data;
       const qr = this.sidebarRepository.createQueryBuilder('sidebar');
       qr.select([

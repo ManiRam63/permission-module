@@ -5,10 +5,14 @@ export const userValidationSchema: {
   [key in keyof IUser]?: yup.AnySchema;
 } = {
   name: yup.string().required(),
-  email: yup.string().email('please enter valid email'),
+  email: yup.string().email('Please enter valid email').required(),
   password: yup.string().required(),
-  phone: yup.string().required(),
-  status: yup.boolean().required().default(true),
+  phone: yup
+    .string()
+    .max(13)
+    .required('Phone must not more then 13 characters'),
+  status: yup.boolean().default(true),
+  role: yup.string().required('Role is required'),
 };
 
 export const findValidationSchema: {

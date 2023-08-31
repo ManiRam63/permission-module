@@ -4,9 +4,14 @@ import { SidebarService } from './sidebar.service';
 import { Sidebar } from './sidebar.entity';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), TypeOrmModule.forFeature([Sidebar])],
+  imports: [
+    ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([Sidebar]),
+    AuthModule,
+  ],
   controllers: [SidebarController],
   providers: [SidebarService],
   exports: [SidebarService],

@@ -3,6 +3,7 @@ import {
   HttpException,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   paginate,
@@ -23,6 +24,9 @@ export abstract class BaseService {
 
   protected _getNotFoundError(message: string) {
     throw new NotFoundException({ message });
+  }
+  protected _getUnauthorized(message: string) {
+    throw new UnauthorizedException({ message });
   }
 
   protected async _paginate<T>(
@@ -77,9 +81,12 @@ export abstract class BaseService {
         return this._getBadRequestError(
           RESPONSE_MESSAGES.COMMON.DUPLICATE_KEY_EXISTS,
         );
-
+      case 401:
+        return this._getUnauthorized(error.message);
       case '23503':
-        return this._getBadRequestError(RESPONSE_MESSAGES.COMMON.NOT_FOUND);
+        return this._getBadRequestError(
+          RESPONSE_MESSAGES.ERROR_MESSAGES.INVALID_TYPE_OF_INPUT,
+        );
 
       case '42830':
         return this._getBadRequestError(
