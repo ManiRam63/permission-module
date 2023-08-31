@@ -1,31 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntityWithId } from '../abstract';
 import { IUser } from 'src/types';
-import { Column, Entity, OneToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { Role } from 'src/role/role.entity';
 import * as bcrypt from 'bcrypt';
 @Entity()
 export class User extends BaseEntityWithId implements IUser {
   @ApiProperty({ description: 'name' })
-  @Column({ type: 'varchar', length: 100, default: null })
+  @Column({ type: 'varchar', length: 100, nullable: false })
   name: string;
 
   @ApiProperty({ description: 'name' })
-  @Column({ type: 'varchar', length: 100, default: null })
+  @Column({ type: 'varchar', length: 100, nullable: false })
   email: string;
 
   @ApiProperty({ description: 'Phone number' })
-  @Column({ type: 'varchar', length: 15, default: null })
+  @Column({ type: 'varchar', length: 15, nullable: false })
   phone: number;
 
   @ApiProperty({ description: 'User Password ' })
-  @Column({ type: 'varchar', length: 100, default: null })
+  @Column({ type: 'varchar', length: 100, nullable: false })
   password: string;
 
-  @ApiProperty({ description: 'User role' })
-  @OneToOne(() => Role)
+  @ApiProperty({ description: 'User role', nullable: false })
+  @ManyToOne(() => Role, {
+    eager: true,
+    nullable: false,
+  })
   @JoinColumn()
-  role: Role;
+  role: string;
 
   // @ApiProperty({ description: 'refresh token' })
   // @Column({ type: 'varchar', default: null })
@@ -35,7 +38,7 @@ export class User extends BaseEntityWithId implements IUser {
     return bcrypt.compare(password, this.password);
   }
 
-  @ApiProperty({ description: 'active' })
+  @ApiProperty({ description: 'active', nullable: false })
   @Column({ type: 'boolean', default: true })
   status: boolean;
 }

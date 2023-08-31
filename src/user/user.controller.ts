@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -19,7 +20,7 @@ import { findValidationSchema, userValidationSchema } from './user.schema';
 import { FindUserDto, UserDto } from './user.dto';
 import { UserService } from './user.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
-import { JwtAuthGuard } from '../auth/jwt.auth.gurd';
+import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -44,7 +45,6 @@ export class UserController {
   ) {
     return await this.userService.create(data);
   }
-
   @Patch(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.UPDATE_USER_BY_ID })
   @ApiResponse({
@@ -92,6 +92,7 @@ export class UserController {
   ) {
     return this.userService.findAll(query);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.GET_USER_BY_ID })
@@ -108,6 +109,7 @@ export class UserController {
     description: RESPONSE_MESSAGES.COMMON.NOT_FOUND,
   })
   find(
+    @Request() req,
     @Param(
       'id',
       new UuIdValidationPipe({ id: RESPONSE_MESSAGES.USER.USER_ID_NOT_VALID }),

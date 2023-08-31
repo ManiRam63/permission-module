@@ -1,68 +1,36 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Role } from './role.entity';
-import { Inject, Injectable, Scope, forwardRef } from '@nestjs/common';
+import { Action } from './action.entity';
+import { Injectable } from '@nestjs/common';
 import { BaseService } from '../abstract';
-import { IRole } from '../types';
+import { IAction } from '../types';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
-import { AuthService } from 'src/auth/auth.service';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
 export const allowedFieldsToSort = ['name'];
-const AllowParams = Object.freeze({
-  SLUG: 'role', // add sidebar slug here
-  ADD: 'add', // add actions here
-  UPDATE: 'update',
-  DELETE: 'delete',
-  VIEW: 'view',
-});
-@Injectable({ scope: Scope.REQUEST })
-export class RoleService extends BaseService {
+@Injectable({})
+export class ActionService extends BaseService {
   constructor(
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
-    @Inject(REQUEST) private readonly request: Request,
+    @InjectRepository(Action)
+    private readonly actionRepository: Repository<Action>,
   ) {
     super();
   }
-  /**
-   * @param :action
-   * @returns {}
-   * @description :This function is used to create role for user base
-   */
-  async decodePermission(action: string) {
-    const userReq = this.request;
-    try {
-      return await this.authService.getPermission(
-        userReq,
-        AllowParams.SLUG,
-        action,
-      );
-    } catch (error) {
-      this.customErrorHandle(error);
-    }
-  }
+
   /**
    * @param
    * @returns {dataObject}
-   * @description :This function is used to create role for user base
+   * @description :This function is used to create action for permission
    */
-  async create(data: Partial<IRole>) {
+  async create(data: Partial<IAction>) {
     const { name } = data;
     try {
-      await this.decodePermission(AllowParams.ADD);
       const IsExist = await this.find({
         name: name,
       });
       if (IsExist) {
-        return this._getNotFoundError(
-          RESPONSE_MESSAGES.ROLE.ROLE_IS_ALREADY_EXIST,
-        );
+        return this._getNotFoundError(RESPONSE_MESSAGES.ACTION.ALREADY_EXIST);
       }
-      const created = this.roleRepository.create(data);
-      return await this.roleRepository.save(created);
+      const created = this.actionRepository.create(data);
+      return await this.actionRepository.save(created);
     } catch (error) {
       this._getBadRequestError(error.message);
     }
@@ -74,29 +42,26 @@ export class RoleService extends BaseService {
    * @description :This function is used to update role
    *
    */
-  async update(id: string, data: Partial<IRole>) {
+  async update(id: string, data: Partial<IAction>) {
     try {
-      await this.decodePermission(AllowParams.UPDATE);
       const { name } = data;
       const IsExist = await this.find({ id: id });
 
       if (!IsExist) {
         return this._getNotFoundError(
-          RESPONSE_MESSAGES.ROLE.ROLE_ID_IS_NOT_VALID,
+          RESPONSE_MESSAGES.ACTION.INVALID_ACTION_Id,
         );
       }
       if (name != IsExist?.name) {
         const IsExist = await this.find({ name: name });
         if (IsExist) {
-          return this._getNotFoundError(
-            RESPONSE_MESSAGES.ROLE.ROLE_NAME_IS_ALREADY_EXIST,
-          );
+          return this._getNotFoundError(RESPONSE_MESSAGES.ACTION.ALREADY_EXIST);
         }
       }
-      const result = await this.roleRepository.update(id, data);
+      const result = await this.actionRepository.update(id, data);
       if (result?.affected > 0) {
         return {
-          message: RESPONSE_MESSAGES.ROLE.ROLE_UPDATED_SUCCESSFULLY,
+          message: RESPONSE_MESSAGES.ACTION.UPDATE_SUCCESSFULLY,
         };
       } else {
         this._getBadRequestError(RESPONSE_MESSAGES.COMMON.SOMETHING_WENT_WRONG);
@@ -112,20 +77,19 @@ export class RoleService extends BaseService {
    * @description :This function is used to update role
    *
    */
-  async updateStatus(id: string, data: Partial<IRole>) {
+  async updateStatus(id: string, data: Partial<IAction>) {
     try {
-      await this.decodePermission(AllowParams.UPDATE);
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(
-          RESPONSE_MESSAGES.ROLE.ROLE_ID_IS_NOT_VALID,
+          RESPONSE_MESSAGES.ACTION.INVALID_ACTION_Id,
         );
       }
 
-      const result = await this.roleRepository.update(id, data);
+      const result = await this.actionRepository.update(id, data);
       if (result?.affected > 0) {
         return {
-          message: RESPONSE_MESSAGES.ROLE.ROLE_STATUS_UPDATED,
+          message: RESPONSE_MESSAGES.ACTION.UPDATE_SUCCESSFULLY,
         };
       } else {
         this._getBadRequestError(RESPONSE_MESSAGES.COMMON.SOMETHING_WENT_WRONG);
@@ -141,7 +105,7 @@ export class RoleService extends BaseService {
    */
   async find(dataObject: object) {
     try {
-      return await this.roleRepository.findOne({
+      return await this.actionRepository.findOne({
         where: dataObject,
       });
     } catch (err) {
@@ -156,33 +120,32 @@ export class RoleService extends BaseService {
    */
   async findAll(data: any) {
     try {
-      await this.decodePermission(AllowParams.VIEW);
-      const { search, role, sort } = data;
-      const qr = this.roleRepository.createQueryBuilder('role');
-      qr.select(['role.id', 'role.name', 'role.status']);
+      const { search, action, sort } = data;
+      const qr = this.actionRepository.createQueryBuilder('action');
+      qr.select(['action.id', 'action.name', 'action.status']);
       if (sort) {
         const param = this.buildSortParams<{
           name: string;
         }>(sort); //check if param is one of keys
         if (allowedFieldsToSort.includes(param[0])) {
           if (param[0] === 'name') {
-            qr.orderBy(`role.${param[0]}`, param[1]);
+            qr.orderBy(`action.${param[0]}`, param[1]);
           }
         }
       } else {
-        qr.orderBy('role.createdAt', 'ASC');
+        qr.orderBy('action.createdAt', 'ASC');
       }
-      if (role) {
-        qr.andWhere('role.name ILIKE :role', {
-          role: '%' + role + '%',
+      if (action) {
+        qr.andWhere('action.name ILIKE :name', {
+          name: '%' + action + '%',
         });
       }
       if (search) {
-        qr.andWhere('role.name ILIKE :search', {
+        qr.andWhere('action.name ILIKE :search', {
           search: '%' + search + '%',
         });
       }
-      return await this._paginate<IRole>(qr, {
+      return await this._paginate<IAction>(qr, {
         limit: data.limit || 10,
         page: data.page || 1,
       });
@@ -201,10 +164,10 @@ export class RoleService extends BaseService {
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(
-          RESPONSE_MESSAGES.ROLE.ROLE_ID_IS_NOT_VALID,
+          RESPONSE_MESSAGES.ACTION.INVALID_ACTION_Id,
         );
       }
-      return await this.roleRepository.findOne({
+      return await this.actionRepository.findOne({
         where: {
           id: id,
         },
@@ -221,17 +184,16 @@ export class RoleService extends BaseService {
    */
   async delete(id) {
     try {
-      await this.decodePermission(AllowParams.DELETE);
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(
-          RESPONSE_MESSAGES.ROLE.ROLE_ID_IS_NOT_VALID,
+          RESPONSE_MESSAGES.ACTION.INVALID_ACTION_Id,
         );
       }
-      const result = await this.roleRepository.delete(id);
+      const result = await this.actionRepository.delete(id);
       if (result?.affected > 0) {
         return {
-          message: RESPONSE_MESSAGES.ROLE.ROLE_DELETED_SUCCESSFULLY,
+          message: RESPONSE_MESSAGES.ACTION.ACTION_DELETED_SUCCESSFULLY,
         };
       } else {
         this._getBadRequestError(RESPONSE_MESSAGES.COMMON.SOMETHING_WENT_WRONG);

@@ -18,7 +18,7 @@ import {
 import { sidebarValidationSchema } from './sidebar.schema';
 import { SidebarDto } from './sidebar.dto';
 import { SidebarService } from './sidebar.service';
-import { JwtAuthGuard } from '../auth/jwt.auth.gurd';
+import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
 // @UseGuards(JwtAuthGuard)
 @Controller('sidebar')

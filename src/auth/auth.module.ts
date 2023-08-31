@@ -15,7 +15,7 @@ import { PermissionModule } from 'src/permission/permission.module';
     PermissionModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '15min' },
+      signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [AuthController],

@@ -5,9 +5,10 @@ import { User } from './user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
-
+import { CacheModule } from '@nestjs/cache-manager';
 @Module({
   imports: [
+    CacheModule.register({ host: '127.0.0.1', port: 6379, db: 0, ttl: 100000 }),
     ConfigModule.forRoot(),
     TypeOrmModule.forFeature([User]),
     AuthModule,

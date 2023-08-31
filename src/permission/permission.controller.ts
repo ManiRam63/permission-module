@@ -14,12 +14,15 @@ import {
   UuIdValidationPipe,
   YupValidationPipe,
 } from '../utils/validation.pipes';
-import { permissionValidationSchema } from './permission.schema';
+import {
+  permissionValidationSchema,
+  updatePermissionValidationSchema,
+} from './permission.schema';
 import { PermissionDto } from './permission.dto';
 import { PermissionService } from './permission.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
-import { JwtAuthGuard } from 'src/auth/jwt.auth.gurd';
-@UseGuards(JwtAuthGuard)
+import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+// @UseGuards(JwtAuthGuard)
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
@@ -70,7 +73,9 @@ export class PermissionController {
     )
     id: string,
     @Body(
-      new YupValidationPipe(getValidationSchema(permissionValidationSchema)),
+      new YupValidationPipe(
+        getValidationSchema(updatePermissionValidationSchema),
+      ),
     )
     data: Permission,
   ) {
