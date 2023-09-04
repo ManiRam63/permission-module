@@ -24,10 +24,11 @@ import { RoleDto } from './role.dto';
 import { RoleService } from './role.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+import { PermissionGuard } from 'src/auth/permission.guard';
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Post('/')
   @ApiOperation({ summary: RESPONSE_MESSAGES.ROLE.CREATE_ROLE })
   @ApiResponse({
@@ -109,6 +110,7 @@ export class RoleController {
    * @param query - query params
    * @description:
    */
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get('/all')
   @ApiOperation({ summary: RESPONSE_MESSAGES.ROLE.UPDATE_ROLE_BY_ID })
   @ApiResponse({

@@ -1,20 +1,26 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Action } from './action.entity';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { BaseService } from '../abstract';
 import { IAction } from '../types';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { AuthService } from 'src/auth/auth.service';
 export const allowedFieldsToSort = ['name'];
-@Injectable({})
+
+@Injectable({ scope: Scope.REQUEST })
 export class ActionService extends BaseService {
   constructor(
     @InjectRepository(Action)
     private readonly actionRepository: Repository<Action>,
+    // @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+    @Inject(REQUEST) private readonly request: Request,
   ) {
     super();
   }
-
   /**
    * @param
    * @returns {dataObject}

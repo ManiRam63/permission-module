@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -12,6 +12,7 @@ import { SidebarModule } from './sidebar/sidebar.module';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
 import { ActionModule } from './action/action.module';
+import { JwtStrategy } from './auth/jwt.strategy';
 @Module({
   imports: [
     CacheModule.register({
@@ -37,6 +38,6 @@ import { ActionModule } from './action/action.module';
     ActionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy],
 })
 export class AppModule {}

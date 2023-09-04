@@ -6,6 +6,16 @@ import { BaseService } from '../abstract';
 import * as bcrypt from 'bcrypt';
 import { jwtConstants } from '../auth/auth.constants';
 import { RESPONSE_MESSAGES } from 'src/types/responseMessages';
+const Actions = Object.freeze({
+  GET: 'get',
+  POST: 'post',
+  PATCH: 'patch',
+  PUT: 'put',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  ADD: 'add',
+  VIEW: 'view',
+});
 @Injectable()
 export class AuthService extends BaseService {
   constructor(
@@ -32,7 +42,7 @@ export class AuthService extends BaseService {
         );
       }
       const payload = {
-        uuid: user.id,
+        uuid: user?.id,
         username: user.email,
       };
       const accessToken = await this.getAccessToken(payload);
@@ -140,19 +150,30 @@ export class AuthService extends BaseService {
     }
   }
   /**
-   *
    * @param req
    * @returns user info
    * @description: this function is used for get user data from jwt token
    */
-  async getPermission(req: any, slug: string, action: string) {
+  async getPermission(userDetails, slug, action) {
     try {
-      const user = await this.getUserByReq(req);
-      if (!user) {
-        this.customErrorHandle('something went wrong');
+      let method = '';
+      // we need to match according to request method
+      switch (action) {
+        case Actions.GET:
+          method = Actions.VIEW;
+          break;
+        case Actions.PATCH:
+          method = Actions.UPDATE;
+          break;
+        case Actions.DELETE:
+          method = Actions.DELETE;
+          break;
+        case Actions.POST:
+          method = Actions.ADD;
+          break;
+        default:
+          break;
       }
-      const { uuid } = user;
-      const userDetails = await this.userService.findById(uuid);
       const userPermissions =
         await this.permissionService.getUserPermissions(userDetails);
       let returnRes: any = false;
@@ -162,7 +183,7 @@ export class AuthService extends BaseService {
         const actionList = x?.actions;
         for (const element of actionList) {
           const actionName = element?.name;
-          if (sidebar === slug && actionName === action) {
+          if (sidebar === slug && actionName === method) {
             returnRes = true;
           }
         }

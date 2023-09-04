@@ -22,10 +22,12 @@ import { PermissionDto } from './permission.dto';
 import { PermissionService } from './permission.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
-// @UseGuards(JwtAuthGuard)
+import { PermissionGuard } from 'src/auth/permission.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Post('/')
   @ApiOperation({ summary: RESPONSE_MESSAGES.PERMISSION.CREATE_PERMISSION })
   @ApiResponse({
@@ -49,7 +51,7 @@ export class PermissionController {
   ) {
     return await this.permissionService.create(data);
   }
-
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Patch(':id')
   @ApiOperation({
     summary: RESPONSE_MESSAGES.PERMISSION.UPDATE_PERMISSION_BY_ID,
@@ -82,7 +84,7 @@ export class PermissionController {
     return this.permissionService.update(id, data);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.PERMISSION.GET_PERMISSION_BY_ID })
   @ApiResponse({
