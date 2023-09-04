@@ -12,6 +12,7 @@ import {
   resetPasswordValidationSchema,
 } from './auth.schema';
 import { JwtAuthGuard } from './jwt.auth.guard';
+import { PermissionGuard } from './permission.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +37,7 @@ export class AuthController {
   ) {
     return this.authService.validateUser(data);
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Post('/reset-password')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.UPDATE_USER_BY_ID })
   @ApiResponse({

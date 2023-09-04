@@ -29,15 +29,16 @@ export class SidebarService extends BaseService {
   }
   async decodePermission(action: string) {
     const userReq = this.request;
-    try {
-      return await this.authService.getPermission(
-        userReq,
-        AllowParams.SLUG,
-        action,
-      );
-    } catch (error) {
-      this.customErrorHandle(error);
-    }
+    // try {
+    //   return await this.authService.getPermission(
+    //     userReq,
+    //     AllowParams.SLUG,
+    //     action,
+    //   );
+    // } catch (error) {
+    //   this.customErrorHandle(error);
+    // }
+    return true;
   }
   /**
    * @param

@@ -191,7 +191,7 @@ export class PermissionService extends BaseService {
     try {
       const id = data?.role?.id;
       if (!id) {
-        return []; // No role ID, return an empty array
+        return [];
       }
       const permissions = (await this.sidebarRepository
         .createQueryBuilder('sidebar')

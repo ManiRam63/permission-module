@@ -20,10 +20,12 @@ import { SidebarDto } from './sidebar.dto';
 import { SidebarService } from './sidebar.service';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
-// @UseGuards(JwtAuthGuard)
+import { PermissionGuard } from 'src/auth/permission.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('sidebar')
 export class SidebarController {
   constructor(private readonly sideService: SidebarService) {}
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Post('/')
   @ApiOperation({ summary: 'Create sidebar tab' })
   @ApiResponse({
@@ -45,7 +47,7 @@ export class SidebarController {
   ) {
     return await this.sideService.create(data);
   }
-  // update side bar value
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Patch(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.SIDEBAR.UPDATE_SIDEBAR_BY_ID })
   @ApiResponse({
@@ -73,7 +75,7 @@ export class SidebarController {
   }
 
   //
-
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get('/all')
   @ApiOperation({ summary: RESPONSE_MESSAGES.SIDEBAR.GET_SIDEBAR_DETAILS })
   @ApiResponse({
@@ -95,8 +97,8 @@ export class SidebarController {
   ) {
     return this.sideService.findAll(query);
   }
-  //get by id
-  // @UseGuards(JwtAuthGuard)
+
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.SIDEBAR.GET_SIDEBAR_DETAILS })
   @ApiResponse({

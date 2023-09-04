@@ -7,7 +7,6 @@ import {
   Post,
   Query,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -21,9 +20,11 @@ import { FindUserDto, UserDto } from './user.dto';
 import { UserService } from './user.service';
 import { RESPONSE_MESSAGES } from '../types/responseMessages';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
+import { PermissionGuard } from 'src/auth/permission.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Post('/')
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({
@@ -45,6 +46,7 @@ export class UserController {
   ) {
     return await this.userService.create(data);
   }
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Patch(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.UPDATE_USER_BY_ID })
   @ApiResponse({
@@ -70,7 +72,7 @@ export class UserController {
   ) {
     return this.userService.update(id, data);
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get('/all')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.GET_USER_DETAILS })
   @ApiResponse({
@@ -93,7 +95,7 @@ export class UserController {
     return this.userService.findAll(query);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Get(':id')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.GET_USER_BY_ID })
   @ApiResponse({
@@ -109,7 +111,6 @@ export class UserController {
     description: RESPONSE_MESSAGES.COMMON.NOT_FOUND,
   })
   find(
-    @Request() req,
     @Param(
       'id',
       new UuIdValidationPipe({ id: RESPONSE_MESSAGES.USER.USER_ID_NOT_VALID }),

@@ -34,15 +34,16 @@ export class RoleService extends BaseService {
    */
   async decodePermission(action: string) {
     const userReq = this.request;
-    try {
-      return await this.authService.getPermission(
-        userReq,
-        AllowParams.SLUG,
-        action,
-      );
-    } catch (error) {
-      this.customErrorHandle(error);
-    }
+    // try {
+    //   return await this.authService.getPermission(
+    //     userReq,
+    //     AllowParams.SLUG,
+    //     action,
+    //   );
+    // } catch (error) {
+    //   this.customErrorHandle(error);
+    // }
+    return true;
   }
   /**
    * @param
@@ -52,7 +53,7 @@ export class RoleService extends BaseService {
   async create(data: Partial<IRole>) {
     const { name } = data;
     try {
-      await this.decodePermission(AllowParams.ADD);
+      // await this.decodePermission(AllowParams.ADD);
       const IsExist = await this.find({
         name: name,
       });

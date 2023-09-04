@@ -9,40 +9,15 @@ import { RESPONSE_MESSAGES } from '../types/responseMessages';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { mailTransporter } from 'src/utils/email.config';
-import { AuthService } from 'src/auth/auth.service';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
 export const allowedFieldsToSort = ['phone', 'status', 'name'];
-const AllowParams = Object.freeze({
-  SLUG: 'user', // add sidebar slug here
-  ADD: 'add', // add actions here
-  UPDATE: 'update',
-  DELETE: 'delete',
-  VIEW: 'view',
-});
 @Injectable({ scope: Scope.REQUEST })
 export class UserService extends BaseService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly authService: AuthService,
-    @Inject(REQUEST) private readonly request: Request,
     @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {
     super();
-  }
-
-  async decodePermission(action: string) {
-    const userReq = this.request;
-    try {
-      return await this.authService.getPermission(
-        userReq,
-        AllowParams.SLUG,
-        action,
-      );
-    } catch (error) {
-      this.customErrorHandle(error);
-    }
   }
   /**
    * @param id
@@ -52,7 +27,6 @@ export class UserService extends BaseService {
   async create(data: Partial<IUser>) {
     const { email, password } = data;
     try {
-      await this.decodePermission(AllowParams.ADD);
       const IsExist = await this.find({ email: email });
       if (IsExist) {
         return this._getNotFoundError(
@@ -87,7 +61,6 @@ export class UserService extends BaseService {
    */
   async update(id: string, data: Partial<IUser>) {
     try {
-      await this.decodePermission(AllowParams.UPDATE);
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(RESPONSE_MESSAGES.USER.USER_ID_NOT_VALID);
@@ -97,7 +70,7 @@ export class UserService extends BaseService {
       const saved = await this.userRepository.save(user);
       return saved;
     } catch (error) {
-      this._getBadRequestError(error.message);
+      this.customErrorHandle(error);
     }
   }
 
@@ -108,7 +81,6 @@ export class UserService extends BaseService {
    */
   async find(dataObject: object) {
     try {
-      await this.decodePermission(AllowParams.VIEW);
       return await this.userRepository.findOne({
         where: dataObject,
       });
@@ -143,7 +115,6 @@ export class UserService extends BaseService {
    */
   async findById(id: string) {
     try {
-      await this.decodePermission(AllowParams.VIEW);
       const cacheUser = await this.cacheService.get(`user_${id}`);
       if (cacheUser) {
         return cacheUser;
@@ -175,7 +146,6 @@ export class UserService extends BaseService {
    */
   async findAll(data: any) {
     try {
-      await this.decodePermission(AllowParams.VIEW);
       const { search, sort, phone } = data;
       const qr = this.userRepository.createQueryBuilder('user');
       qr.leftJoinAndSelect('user.role', 'role');

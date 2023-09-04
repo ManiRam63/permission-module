@@ -32,20 +32,4 @@ export class Permission extends BaseEntityWithId {
   })
   @JoinColumn()
   action: Action;
-  // @ApiProperty({ description: 'Is active flag' })
-  // @Column({ type: 'boolean', default: true })
-  // create: boolean;
-
-  // @ApiProperty({ description: 'Is active flag' })
-  // @Column({ type: 'boolean', default: true })
-  // view: boolean;
-  // @ApiProperty({ description: 'Is active flag' })
-  // @Column({ type: 'boolean', default: true })
-  // update: boolean;
-  // @ApiProperty({ description: 'read' })
-  // @Column({ type: 'boolean', default: true })
-  // read: boolean;
-  // @ApiProperty({ description: ' delete' })
-  // @Column({ type: 'boolean', default: true })
-  // delete: boolean;
 }
