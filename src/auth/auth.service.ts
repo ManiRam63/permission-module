@@ -35,6 +35,11 @@ export class AuthService extends BaseService {
     try {
       const { email, password } = data;
       const user: any = await this.userService.findByEmail(email);
+      if (!user) {
+        this._getBadRequestError(
+          RESPONSE_MESSAGES.USER.INVALID_USER_NAME_OR_PASSWORD,
+        );
+      }
       const passwordIsValid = await bcrypt.compare(password, user?.password);
       if (!passwordIsValid) {
         this._getBadRequestError(
@@ -192,6 +197,29 @@ export class AuthService extends BaseService {
         return true;
       }
       throw this._getUnauthorized('Permission Denied');
+    } catch (error) {
+      this.customErrorHandle(error);
+    }
+  }
+
+  /**
+   * @param : email and password
+   * @returns {message}
+   * @description: this function is used for forget user password
+   */
+  async forgetPassword(data: any) {
+    try {
+      const { email, newPassword } = data;
+      const user: any = await this.userService.findByEmail(email);
+      if (!user) {
+        this._getBadRequestError(RESPONSE_MESSAGES.USER.EMAIL_IS_NOT_EXIST);
+      }
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+      await this.userService.update(user?.id, { password: hashedPassword });
+      return {
+        message: 'Your password has been update successfully',
+      };
     } catch (error) {
       this.customErrorHandle(error);
     }

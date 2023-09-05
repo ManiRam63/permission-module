@@ -9,14 +9,15 @@ import {
 } from '../utils/validation.pipes';
 import {
   authValidationSchema,
+  forgetPasswordValidationSchema,
   resetPasswordValidationSchema,
 } from './auth.schema';
 import { JwtAuthGuard } from './jwt.auth.guard';
 import { PermissionGuard } from './permission.guard';
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @Post('/signIn')
   @ApiOperation({ summary: RESPONSE_MESSAGES.USER.UPDATE_USER_BY_ID })
   @ApiResponse({
@@ -60,5 +61,31 @@ export class AuthController {
     data: AuthDto,
   ) {
     return this.authService.resetPassword(req, data);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/forget-password')
+  @ApiOperation({ summary: RESPONSE_MESSAGES.USER.FORGET_PASSWORD })
+  @ApiResponse({
+    status: 200,
+    description: RESPONSE_MESSAGES.USER.FORGET_PASSWORD,
+  })
+  @ApiResponse({
+    status: 500,
+    description: RESPONSE_MESSAGES.ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
+  })
+  @ApiResponse({
+    status: 400,
+    description: RESPONSE_MESSAGES.COMMON.NOT_FOUND,
+  })
+  async forgetPassword(
+    @Body(
+      new YupValidationPipe(
+        getValidationSchema(forgetPasswordValidationSchema),
+      ),
+    )
+    data: AuthDto,
+  ) {
+    return this.authService.forgetPassword(data);
   }
 }

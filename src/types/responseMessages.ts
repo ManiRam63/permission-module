@@ -20,6 +20,8 @@ export const RESPONSE_MESSAGES = {
     GET_USER_DETAILS: 'Get user details',
     INVALID_USER_NAME_OR_PASSWORD: 'Invalid Email or Password',
     INVALID_PASSWORD: 'Invalid password ',
+    FORGET_PASSWORD: 'Forget Password',
+    EMAIL_IS_NOT_EXIST: 'Email is not exist',
   },
   SIDEBAR: {
     SIDEBAR_IS_ALREADY_EXIST: 'Already Exist this record',

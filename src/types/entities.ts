@@ -53,3 +53,7 @@ export interface IResetPassword {
   oldPassword: string;
   newPassword: string;
 }
+export interface IForgetPassword {
+  email: string;
+  newPassword: string;
+}

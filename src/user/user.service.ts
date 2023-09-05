@@ -115,10 +115,6 @@ export class UserService extends BaseService {
    */
   async findById(id: string) {
     try {
-      const cacheUser = await this.cacheService.get(`user_${id}`);
-      if (cacheUser) {
-        return cacheUser;
-      }
       const IsExist = await this.find({ id: id });
       if (!IsExist) {
         return this._getNotFoundError(RESPONSE_MESSAGES.USER.USER_ID_NOT_VALID);
@@ -128,12 +124,6 @@ export class UserService extends BaseService {
           id: id,
         },
       });
-      if (user) {
-        await this.cacheService.set(`user_${id}`, user);
-        const cachedData = await this.cacheService.get(id.toString());
-        console.log('data set to cache', cachedData);
-      }
-
       return user;
     } catch (err) {
       return this._getInternalServerError(err.message);

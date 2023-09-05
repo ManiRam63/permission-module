@@ -6,7 +6,6 @@ export const userValidationSchema: {
 } = {
   name: yup.string().required(),
   email: yup.string().email('Please enter valid email').required(),
-  password: yup.string().required(),
   phone: yup
     .string()
     .max(13)

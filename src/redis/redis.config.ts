@@ -1,8 +1,21 @@
-import { createClient } from 'redis';
-export default createClient({
-  password: 'tGdj3FLD7dfDQyuWoG63WNHI8fCC5tyW',
-  socket: {
-    host: 'redis-12971.c309.us-east-2-1.ec2.cloud.redislabs.com',
-    port: 12971,
+import { CacheModuleAsyncOptions } from '@nestjs/cache-manager';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { redisStore } from 'cache-manager-redis-store';
+
+export const RedisOptions: CacheModuleAsyncOptions = {
+  isGlobal: true,
+  imports: [ConfigModule],
+  useFactory: async () => {
+    const store = await redisStore({
+      socket: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT || 6379),
+      },
+      ttl: 30,
+    });
+    return {
+      store: () => store,
+    };
   },
-});
+  inject: [ConfigService],
+};

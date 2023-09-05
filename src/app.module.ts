@@ -1,5 +1,5 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
+import { Module } from '@nestjs/common';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -13,14 +13,13 @@ import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
 import { ActionModule } from './action/action.module';
 import { JwtStrategy } from './auth/jwt.strategy';
+import { ConfigModule } from '@nestjs/config';
+import { RedisOptions } from './redis/redis.config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 @Module({
   imports: [
-    CacheModule.register({
-      host: '127.0.0.1',
-      port: 6379,
-      db: 0,
-      ttl: 100000,
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.registerAsync(RedisOptions),
     TypeOrmModule.forRoot(
       createTypeOrmProdConfig({
         entities: ['dist/**/*.entity{.ts,.js}'],
@@ -38,6 +37,14 @@ import { JwtStrategy } from './auth/jwt.strategy';
     ActionModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy],
+  providers: [
+    AppService,
+    JwtStrategy,
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}

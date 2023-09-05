@@ -1,4 +1,4 @@
-import { IAuth, IResetPassword } from 'src/types';
+import { IAuth, IForgetPassword, IResetPassword } from 'src/types';
 import * as yup from 'yup';
 
 export const authValidationSchema: {
@@ -12,5 +12,12 @@ export const resetPasswordValidationSchema: {
   [key in keyof IResetPassword]?: yup.AnySchema;
 } = {
   oldPassword: yup.string().required('Old Password is required'),
+  newPassword: yup.string().required('New Password is required'),
+};
+
+export const forgetPasswordValidationSchema: {
+  [key in keyof IForgetPassword]?: yup.AnySchema;
+} = {
+  email: yup.string().email().required('Email is required'),
   newPassword: yup.string().required('New Password is required'),
 };

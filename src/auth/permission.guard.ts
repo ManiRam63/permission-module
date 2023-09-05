@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 
 @Injectable()
 /**
+ * @
  * @description:this is used for permission based which will check via token of login user
  */
 export class PermissionGuard implements CanActivate {
